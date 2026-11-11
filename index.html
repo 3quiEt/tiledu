@@ -10,8 +10,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> -->
+    <!-- ДОБАВЬ ЭТУ СТРОКУ СЮДА: -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         body {
@@ -469,14 +469,14 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block font-semibold text-slate-700 mb-1.5">Атауы (Название)</label>
-                        <input type="text" id="modalSorTitle" placeholder="СӨР №2: Абай жолы" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none text-xs font-medium">
+                        <input type="text" id="modalSorTitle" placeholder="БЖБ №2: Абай жолы" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none text-xs font-medium">
                     </div>
                     <div>
                         <label class="block font-semibold text-slate-700 mb-1.5">Түрі (Тип)</label>
                         <select id="modalSorType" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:outline-none text-xs font-medium">
-                            <option value="СӨР 1">СӨР 1 (СОР 1)</option>
-                            <option value="СӨР 2">СӨР 2 (СОР 2)</option>
-                            <option value="СӨЧ">СӨЧ (СОЧ)</option>
+                            <option value="БЖБ 1">БЖБ 1 (СОР 1)</option>
+                            <option value="БЖБ 2">БЖБ 2 (СОР 2)</option>
+                            <option value="ТЖБ">ТЖБ (СОЧ)</option>
                         </select>
                     </div>
                 </div>
@@ -565,11 +565,19 @@
                         </div>
 
                         <!-- Choices input if type === choice -->
-                        <div id="qChoiceContainer" class="space-y-1.5">
-                            <label class="block text-[11px] font-semibold text-slate-600">Варианттар (3 шт)</label>
-                            <input type="text" id="qOpt1" placeholder="Вариант А" class="w-full p-2 border border-slate-300 rounded-lg text-xs font-medium">
-                            <input type="text" id="qOpt2" placeholder="Вариант Б" class="w-full p-2 border border-slate-300 rounded-lg text-xs font-medium">
-                            <input type="text" id="qOpt3" placeholder="Вариант В" class="w-full p-2 border border-slate-300 rounded-lg text-xs font-medium">
+                        <div id="qChoiceContainer" class="space-y-2">
+                            <div class="flex justify-between items-center">
+                                <label class="block text-[11px] font-semibold text-slate-600">Варианттар</label>
+                                <button type="button" onclick="addOptionInput()" class="text-xs text-teal-600 hover:text-teal-700 font-bold flex items-center space-x-1">
+                                    <i class="fa-solid fa-plus text-[10px]"></i>
+                                    <span>Вариант қосу</span>
+                                </button>
+                            </div>
+                            <!-- Сюда динамически добавляются инпуты вариантов -->
+                            <div id="dynamicOptionsList" class="space-y-1.5">
+                                <input type="text" placeholder="Вариант А" class="option-input w-full p-2 border border-slate-300 rounded-lg text-xs font-medium">
+                                <input type="text" placeholder="Вариант Б" class="option-input w-full p-2 border border-slate-300 rounded-lg text-xs font-medium">
+                            </div>
                         </div>
 
                         <div class="flex justify-end space-x-2 pt-2">
@@ -595,21 +603,58 @@
     <!-- JAVASCRIPT STATE MANAGEMENT & INTERACTION -->
     <script>
 
-        /*
-        1. Твои ключи из Supabase
-        const SUPABASE_URL = 'https://geapgmmkzdqmjmftdkqb.supabase.co'; 
-        const SUPABASE_ANON_KEY = 'sb_publishable_UGtzaza2TFDSQ18t2NGqGQ_WcNSbtoZ'; // твой длинный Publishable key
+        document.addEventListener("DOMContentLoaded", async () => {
+            console.log("Страница загружена, запускаем инициализацию...");
+            
+            if (typeof loadUsersFromSupabase === 'function') await loadUsersFromSupabase();
+            if (typeof loadTestsFromSupabase === 'function') await loadTestsFromSupabase();
+            if (typeof loadResultsFromSupabase === 'function') await loadResultsFromSupabase();
+            
+            // --- ВОССТАНАВЛИВАЕМ СЕССИЮ ПРИ СТАРТЕ ---
+            if (localStorage.getItem('isLoggedIn') === 'true') {
+                const savedUser = localStorage.getItem('currentUser');
+                if (savedUser) {
+                    try {
+                        state.isLoggedIn = true;
+                        state.user = JSON.parse(savedUser);
+                        console.log("Сессия восстановлена для пользователя:", state.user.login);
+                    } catch (e) {
+                        console.error("Ошибка восстановления сессии:", e);
+                        localStorage.clear();
+                    }
+                }
+            }
 
-        // 2. Создание подключения (ПИСАТЬ СТРОГО 1 РАЗ)
+            if (typeof renderState === 'function') {
+                renderState();
+            }
+        });
+
+        // ВСТАВЬ ЭТОТ БЛОК САМЫМ ПЕРВЫМ ВНУТРИ SCRIPT:
+        const SUPABASE_URL = 'https://undkjdtyqxrgaeabdhwn.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_JOulpkJdoJh1aTJW_Ff4gw_ryE_An0l';
+
+        function addOptionInput() {
+            const container = document.getElementById('dynamicOptionsList');
+            const count = container.children.length + 1;
+            const letter = String.fromCharCode(1040 + count); // Автоматически буквы А, Б, В, Г, Д...
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = `Вариант ${letter}`;
+            input.className = 'option-input w-full p-2 border border-slate-300 rounded-lg text-xs font-medium mt-1.5';
+            container.appendChild(input);
+        }
+
         let supabaseClient = null;
         if (typeof window.supabase !== 'undefined' && SUPABASE_ANON_KEY) {
             try {
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log("Supabase успешно подключен!");
             } catch (err) {
                 console.warn("Ошибка подключения Supabase:", err);
             }
         }
-        */
 
         // GLOBAL STATE
         const state = {
@@ -679,7 +724,27 @@
             }
         }
 
-        function handleRegister(e) {
+        async function loadUsersFromSupabase() {
+            if (!supabaseClient) return;
+
+            const { data, error } = await supabaseClient.from('profiles').select('*');
+            if (error) {
+                console.error('Ошибка загрузки пользователей:', error);
+            } else if (data) {
+                data.forEach(u => {
+                    state.registeredUsers[u.login] = {
+                        login: u.login,
+                        pass: u.pass,
+                        name: u.name,
+                        initials: u.initials || '',
+                        class: u.class || '',
+                        role: u.role
+                    };
+                });
+            }
+        }
+
+        async function handleRegister(e) {
             e.preventDefault();
             const role = document.getElementById('regRole').value;
             const lastName = document.getElementById('regLastName').value.trim();
@@ -702,6 +767,65 @@
                 errDiv.textContent = 'Бұл логинмен пайдаланушы тіркеліп қойған!';
                 errDiv.classList.remove('hidden');
                 return;
+            }
+
+            if (role === 'student') {
+                const grade = document.getElementById('regGrade').value;
+                const letter = document.getElementById('regLetter').value;
+                const initials = (lastName[0] || '') + (firstName[0] || '');
+                const userClass = `${grade}${letter} класс`;
+
+                const newUser = {
+                    login: login,
+                    pass: '1234',
+                    name: `${lastName} ${firstName}`,
+                    full_name: `${lastName} ${firstName}`,
+                    initials: initials.toUpperCase(),
+                    class: userClass,
+                    role: 'student'
+                };
+
+                if (supabaseClient) {
+                    const { error } = await supabaseClient.from('profiles').insert([newUser]);
+                    if (error) {
+                        console.error('Ошибка регистрации в базе:', error);
+                        errDiv.textContent = 'Ошибка при сохранении аккаунта в базу!';
+                        errDiv.classList.remove('hidden');
+                        return;
+                    }
+                }
+
+                state.registeredUsers[login] = newUser;
+
+                succDiv.textContent = `Тіркелу сәтті! Логиніңіз: ${login}, Пароль: 1234`;
+                succDiv.classList.remove('hidden');
+
+                setTimeout(() => {
+                    switchAuthTab('login');
+                    document.getElementById('loginUsername').value = login;
+                    document.getElementById('loginPassword').value = '1234';
+                }, 1500);
+
+            } else { // Teacher registration
+                state.pendingTeacherRequests.push({
+                    login: login,
+                    name: `${lastName} ${firstName}`,
+                    lastName: lastName,
+                    firstName: firstName,
+                    status: 'pending'
+                });
+
+                succDiv.textContent = 'Өтініш бас администраторға (Латыпова Майра) жіберілді. Расталғаннан кейін кіре аласыз!';
+                succDiv.classList.add('hidden'); // Или remove, если был hidden
+                succDiv.classList.remove('hidden');
+            }
+        }
+
+            const login = `${lastName}_${firstName}`;
+
+            if (state.registeredUsers[login]) {
+                errDiv.textContent = 'Бұл логинмен пайдаланушы тіркеліп қойған!';
+                errDiv.classList.remove('hidden');
             }
 
             if (role === 'student') {
@@ -739,7 +863,6 @@
                 succDiv.textContent = 'Өтініш бас администраторға (Латыпова Майра) жіберілді. Расталғаннан кейін кіре аласыз!';
                 succDiv.classList.remove('hidden');
             }
-        }
 
         function handleLogin(e) {
             e.preventDefault();
@@ -766,6 +889,9 @@
             // Successful login
             state.isLoggedIn = true;
             state.user = foundUser;
+
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('currentUser', JSON.stringify(foundUser));
 
             renderState();
         }
@@ -917,6 +1043,14 @@
             
             renderTempQuestionsList();
             document.getElementById('sorCreateModal').classList.remove('hidden');
+
+            const optList = document.getElementById('dynamicOptionsList');
+            if (optList) {
+                optList.innerHTML = `
+                    <input type="text" placeholder="Вариант А" class="option-input w-full p-2 border border-slate-300 rounded-lg text-xs font-medium">
+                    <input type="text" placeholder="Вариант Б" class="option-input w-full p-2 border border-slate-300 rounded-lg text-xs font-medium">
+                `;
+            }
         }
 
         function openSorModalForEdit(sorId) {
@@ -936,6 +1070,14 @@
             state.tempQuestions = JSON.parse(JSON.stringify(test.questions));
             renderTempQuestionsList();
             document.getElementById('sorCreateModal').classList.remove('hidden');
+
+            const optList = document.getElementById('dynamicOptionsList');
+            if (optList) {
+                optList.innerHTML = `
+                    <input type="text" placeholder="Вариант А" class="option-input w-full p-2 border border-slate-300 rounded-lg text-xs font-medium">
+                    <input type="text" placeholder="Вариант Б" class="option-input w-full p-2 border border-slate-300 rounded-lg text-xs font-medium">
+                `;
+            }
         }
 
         function closeSorModal() {
@@ -975,10 +1117,17 @@
             };
 
             if (type === 'choice') {
-                const opt1 = document.getElementById('qOpt1').value.trim();
-                const opt2 = document.getElementById('qOpt2').value.trim();
-                const opt3 = document.getElementById('qOpt3').value.trim();
-                newQ.options = [opt1 || 'Вариант А', opt2 || 'Вариант Б', opt3 || 'Вариант В'];
+                const optionInputs = document.querySelectorAll('.option-input');
+                newQ.options = [];
+                optionInputs.forEach(input => {
+                    const val = input.value.trim();
+                    if (val) newQ.options.push(val);
+                });
+
+                if (newQ.options.length < 2) {
+                    alert('Кем дегенде 2 вариант енгізу қажет!');
+                    return;
+                }
             }
 
             state.tempQuestions.push(newQ);
@@ -1013,13 +1162,49 @@
             container.innerHTML = html;
         }
 
-        function saveSorTest() {
+        async function loadTestsFromSupabase() {
+            console.log("1. Функция loadTestsFromSupabase вызвана!");
+            
+            if (!supabaseClient) {
+                console.error("КРИТИЧЕСКАЯ ОШИБКА: supabaseClient не определен!");
+                return;
+            }
+
+            console.log("2. Делаем запрос к таблице tests...");
+            const { data, error } = await supabaseClient.from('tests').select('*');
+            
+            console.log("3. Ответ от Supabase получeн. Ошибка:", error);
+            console.log("4. Полученные данные:", data);
+
+            if (error) {
+                console.error('Ошибка загрузки тестов из базы:', error);
+            } else if (data) {
+                state.sorTests = data.map(t => ({
+                    id: (t.id || '').toString(),
+                    title: t.title || 'Без названия',
+                    type: t.type || 'СОР 1',
+                    grade: t.grade || '11',
+                    quarter: t.quarter || '4',
+                    time: t.time || 25,
+                    maxScore: t.max_score || t.maxScore || 15,
+                    readingText: t.reading_text || t.readingText || '',
+                    audioUrl: t.audio_url || t.audioUrl || '',
+                    questions: t.questions || []
+                }));
+                console.log("5. state.sorTests успешно заполнен:", state.sorTests);
+            }
+
+            console.log("6. Вызываем renderState()...");
+            renderState();
+        }
+
+        async function saveSorTest() {
             const id = document.getElementById('modalSorId').value;
             const title = document.getElementById('modalSorTitle').value.trim();
             const type = document.getElementById('modalSorType').value;
             const grade = document.getElementById('modalSorGrade').value;
             const quarter = document.getElementById('modalSorQuarter').value;
-            const time = document.getElementById('modalSorTime').value;
+            const time = parseInt(document.getElementById('modalSorTime').value) || 25;
             const readingText = document.getElementById('modalSorReadingText').value;
             const audioUrl = document.getElementById('modalSorAudioUrl').value;
 
@@ -1030,39 +1215,49 @@
 
             const totalScore = state.tempQuestions.reduce((sum, q) => sum + (q.score || 0), 0);
 
-            if (id) {
-                // Update existing
-                const test = state.sorTests.find(t => t.id === id);
-                if (test) {
-                    test.title = title;
-                    test.type = type;
-                    test.grade = grade;
-                    test.quarter = quarter;
-                    test.time = time;
-                    test.readingText = readingText;
-                    test.audioUrl = audioUrl;
-                    test.maxScore = totalScore || 15;
-                    test.questions = [...state.tempQuestions];
+            const testData = {
+                title: title,
+                type: type,
+                grade: grade,
+                quarter: quarter,
+                time: time,
+                max_score: totalScore || 15,
+                reading_text: readingText,
+                audio_url: audioUrl,
+                questions: state.tempQuestions
+            };
+
+            console.log("ЧТО ОТПРАВЛЯЕМ В БАЗУ:", testData);
+
+            if (supabaseClient) {
+                if (id) {
+                    // Обновляем существующий тест
+                    const { error } = await supabaseClient
+                        .from('tests')
+                        .update(testData)
+                        .eq('id', id);
+                    
+                    if (error) {
+                        console.error('Ошибка обновления теста:', error);
+                        alert('Ошибка при обновлении в базе данных!');
+                        return;
+                    }
+                } else {
+                    // Создаем новый тест
+                    const { error } = await supabaseClient
+                        .from('tests')
+                        .insert([testData]);
+                    
+                    if (error) {
+                        console.error('Ошибка сохранения теста:', error);
+                        alert('Ошибка при сохранении в базу данных!');
+                        return;
+                    }
                 }
-            } else {
-                // Create new
-                const newTest = {
-                    id: 'sor_' + Date.now(),
-                    title: title,
-                    type: type,
-                    grade: grade,
-                    quarter: quarter,
-                    time: time,
-                    maxScore: totalScore || 15,
-                    readingText: readingText,
-                    audioUrl: audioUrl,
-                    questions: [...state.tempQuestions]
-                };
-                state.sorTests.push(newTest);
             }
 
             closeSorModal();
-            renderTeacherSorManageGrid();
+            loadTestsFromSupabase(); // Перезагружаем актуальный список из базы
         }
 
         // --- MISSING STUDENT & TEACHER RENDERERS ---
@@ -1147,7 +1342,34 @@
             state.activeSorId = null;
         }
 
-        function submitStudentTest(e) {
+        async function loadResultsFromSupabase() {
+            if (!supabaseClient) return;
+
+            const { data, error } = await supabaseClient.from('results').select('*');
+            if (error) {
+                console.error('Ошибка загрузки результатов:', error);
+            } else {
+                state.submissions = data.map(s => ({
+                    id: s.id.toString(),
+                    sorId: s.sor_id,
+                    studentLogin: s.student_login,
+                    studentName: s.student_name,
+                    studentClass: s.student_class,
+                    submittedAt: s.submitted_at,
+                    answers: s.answers || {},
+                    score: s.score,
+                    evaluated: s.evaluated || false,
+                    feedback: s.feedback || '',
+                    status: s.status || 'pending'
+                }));
+
+                if (state.activeTab === 'results' || state.activeTab === 'teacherGrading') {
+                    renderState();
+                }
+            }
+        }
+
+        async function submitStudentTest(e) {
             e.preventDefault();
             const test = state.sorTests.find(t => t.id === state.activeSorId);
             if (!test) return;
@@ -1160,13 +1382,12 @@
                 answers[q.id] = formData.get(`ans_${q.id}`) || 'Жауап берілмеді';
             });
 
-            const submission = {
-                id: 'sub_' + Date.now(),
-                sorId: test.id,
-                studentLogin: state.user.login,
-                studentName: state.user.name,
-                studentClass: state.user.class,
-                submittedAt: new Date().toLocaleDateString('ru-RU'),
+            const submissionData = {
+                sor_id: test.id,
+                student_login: state.user.login,
+                student_name: state.user.name,
+                student_class: state.user.class,
+                submitted_at: new Date().toLocaleDateString('ru-RU'),
                 answers: answers,
                 score: null,
                 evaluated: false,
@@ -1174,11 +1395,19 @@
                 status: 'pending'
             };
 
-            state.submissions.push(submission);
+            if (supabaseClient) {
+                const { error } = await supabaseClient.from('results').insert([submissionData]);
+                if (error) {
+                    console.error('Ошибка сохранения результата:', error);
+                    alert('Ошибка при отправке работы в базу данных!');
+                    return;
+                }
+            }
 
             alert('Тапсырма сәтті тапсырылды! Мұғалім тексерген соң нәтиже "Нәтижелер" бөлімінде пайда болады.');
 
             backToSorList();
+            loadResultsFromSupabase(); // Перезагружаем результаты из базы
             setActiveTab('results');
         }
 
@@ -1354,7 +1583,7 @@
             state.editingGradingSubmissionId = null;
         }
 
-        function saveStudentEvaluation() {
+        async function saveStudentEvaluation() {
             const sub = state.submissions.find(s => s.id === state.editingGradingSubmissionId);
             if (!sub) return;
 
@@ -1366,7 +1595,26 @@
             sub.evaluated = true;
             sub.status = 'completed';
 
+            if (supabaseClient) {
+                const { error } = await supabaseClient
+                    .from('results')
+                    .update({
+                        score: scoreInp,
+                        feedback: feedbackInp,
+                        evaluated: true,
+                        status: 'completed'
+                    })
+                    .eq('id', sub.id);
+
+                if (error) {
+                    console.error('Ошибка сохранения оценки:', error);
+                    alert('Ошибка при обновлении оценки в базе данных!');
+                    return;
+                }
+            }
+
             closeGradingModal();
+            loadResultsFromSupabase();
             renderTeacherGradingTable();
         }
 
@@ -1447,15 +1695,14 @@
             tbody.innerHTML = html;
         }
 
-        function approveTeacher(idx) {
+        async function approveTeacher(idx) {
             const req = state.pendingTeacherRequests[idx];
             if (!req) return;
 
             req.status = 'approved';
 
-            // Create teacher account with password "admin"
             const initials = (req.lastName[0] || '') + (req.firstName[0] || '');
-            state.registeredUsers[req.login] = {
+            const newTeacher = {
                 login: req.login,
                 pass: 'admin',
                 name: req.name,
@@ -1463,6 +1710,12 @@
                 class: 'Мұғалім',
                 role: 'teacher'
             };
+
+            if (supabaseClient) {
+                await supabaseClient.from('profiles').insert([newTeacher]);
+            }
+
+            state.registeredUsers[req.login] = newTeacher;
 
             alert(`Мұғалім ${req.name} сәтті қабылданды!\nЖүйеге кіру паролі: admin`);
             renderState();
@@ -1476,7 +1729,9 @@
         }
 
         // --- INITIALIZATION ON WINDOW LOAD ---
-        window.onload = function() {
+        window.onload = async function() {
+            await loadUsersFromSupabase();
+            await loadResultsFromSupabase();
             renderState();
         };
     </script>
