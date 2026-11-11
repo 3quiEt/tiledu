@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-full bg-gray-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Цифровая образовательная платформа</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> -->
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 6px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .bg-sidebar-dark {
+            background: linear-gradient(180deg, #064e3b 0%, #022c22 100%);
+        }
+        /* Custom styled select controls */
+        select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%6b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.6rem center;
+            background-repeat: no-repeat;
+            background-size: 1.25em 1.25em;
+            padding-right: 2.2rem !important;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col overflow-x-hidden text-slate-800 bg-slate-100">
+
+    <!-- TOP BAR / HEADER -->
+    <header class="bg-gradient-to-r from-emerald-900 via-teal-800 to-emerald-950 text-white shadow-lg z-30 sticky top-0 border-b border-emerald-700/40">
+        <div class="w-full px-5 py-3.5 flex items-center justify-between">
+            <div class="flex items-center space-x-3.5">
+                <div class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-inner">
+                    <i class="fa-solid fa-graduation-cap text-xl text-amber-300"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-serif italic tracking-wide text-white font-bold">
+                        Цифровая образовательная платформа
+                    </h1>
+                </div>
+            </div>
+            
+            <!-- Context badge -->
+            <div class="hidden sm:flex items-center space-x-2 text-xs bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 text-emerald-100">
+                <i class="fa-solid fa-book-bookmark text-amber-300"></i>
+                <span class="font-medium">Қазақ тілі мен әдебиеті СОР / СОЧ</span>
+            </div>
+        </div>
+
+        <!-- MAIN SUB-NAVIGATION BAR (Visible when logged in) -->
+        <nav id="topNav" class="bg-emerald-950/90 backdrop-blur-md text-white text-xs md:text-sm px-4 hidden overflow-x-auto whitespace-nowrap border-t border-white/10">
+            <div id="navContainer" class="flex space-x-2 py-1.5">
+                <!-- Navigation tabs rendered dynamically by JS -->
+            </div>
+        </nav>
+    </header>
+
+    <!-- MAIN APP CONTAINER -->
+    <div class="flex-1 flex flex-col md:flex-row w-full min-h-screen">
+        
+        <!-- LEFT SIDEBAR -->
+        <aside class="w-full md:w-80 bg-sidebar-dark text-white flex-shrink-0 flex flex-col shadow-2xl z-20 border-r border-emerald-900/50">
+            
+            <!-- USER PROFILE SUMMARY (WHEN LOGGED IN) -->
+            <div id="sidebarUserBlock" class="hidden p-5 border-b border-emerald-800/50 bg-emerald-950/40 backdrop-blur-md">
+                <div class="flex items-center space-x-3.5 mb-4">
+                    <div id="userAvatar" class="w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-400 to-emerald-600 flex items-center justify-center font-bold text-lg text-white shadow-lg border border-white/30">
+                        --
+                    </div>
+                    <div>
+                        <div class="text-[11px] text-teal-300 uppercase tracking-wider font-semibold">Қош келдіңіз!</div>
+                        <div id="userName" class="font-bold text-base tracking-wide text-white">--</div>
+                        <div id="userClass" class="text-xs text-slate-300 flex items-center mt-1">
+                            <i class="fa-solid fa-id-badge text-amber-400 mr-1.5 text-[11px]"></i>
+                            <span>--</span>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="logout()" class="w-full py-2 px-3 bg-rose-600/80 hover:bg-rose-600 text-white rounded-lg text-xs font-semibold transition duration-150 flex items-center justify-center space-x-2 shadow-md">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Шығу (Выйти)</span>
+                </button>
+            </div>
+
+            <!-- LOGIN & REGISTRATION SIDEBAR BLOCK (WHEN NOT LOGGED IN) -->
+            <div id="sidebarLoginBlock" class="p-6 flex-1 flex flex-col justify-start">
+                
+                <!-- Auth Tabs -->
+                <div class="flex rounded-xl bg-emerald-950/90 p-1 mb-6 border border-white/10 shadow-inner">
+                    <button id="tabAuthLogin" onclick="switchAuthTab('login')" class="flex-1 py-2 text-xs font-semibold rounded-lg bg-teal-600 text-white shadow">Войти</button>
+                    <button id="tabAuthReg" onclick="switchAuthTab('register')" class="flex-1 py-2 text-xs font-semibold rounded-lg text-teal-200 hover:text-white transition">Регистрация</button>
+                </div>
+
+                <!-- LOGIN FORM -->
+                <form id="formLogin" onsubmit="handleLogin(event)" class="space-y-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-1">Добро пожаловать!</h3>
+                        <p class="text-xs text-teal-200/80">Введи логин и пароль для входа</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-teal-200 mb-1.5">Логин</label>
+                        <input type="text" id="loginUsername" required placeholder="Фамилия_Имя" class="w-full px-3.5 py-2.5 text-xs text-slate-900 bg-white rounded-lg border border-teal-800 focus:ring-2 focus:ring-teal-400 focus:outline-none shadow-sm font-medium">
+                        <span class="text-[10px] text-teal-300/80 mt-1 block">Ваш логин — это Фамилия_Имя</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-teal-200 mb-1.5">Пароль</label>
+                        <input type="password" id="loginPassword" required placeholder="••••" class="w-full px-3.5 py-2.5 text-xs text-slate-900 bg-white rounded-lg border border-teal-800 focus:ring-2 focus:ring-teal-400 focus:outline-none shadow-sm font-medium">
+                    </div>
+
+                    <div id="loginError" class="hidden text-xs text-rose-300 bg-rose-950/80 p-3 rounded-lg border border-rose-700/60"></div>
+
+                    <button type="submit" class="w-full py-2.5 px-4 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-white font-bold text-xs rounded-lg shadow-lg transition duration-200 flex items-center justify-center space-x-2">
+                        <span>Войти</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </form>
+
+                <!-- REGISTRATION FORM -->
+                <form id="formRegister" onsubmit="handleRegister(event)" class="hidden space-y-3.5">
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-1">Регистрация</h3>
+                        <p class="text-xs text-teal-200/80">Создание нового аккаунта</p>
+                    </div>
+
+                    <!-- Role Switcher in Reg -->
+                    <div class="space-y-1">
+                        <label class="block text-xs font-semibold text-teal-200">Кто вы?</label>
+                        <select id="regRole" onchange="toggleRegFields()" class="w-full px-3 py-2 text-xs text-slate-900 bg-white rounded-lg border focus:outline-none font-medium">
+                            <option value="student">Ученик</option>
+                            <option value="teacher">Учитель</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-teal-200 mb-1">Фамилия</label>
+                        <input type="text" id="regLastName" required placeholder="Иванов" class="w-full px-3 py-2 text-xs text-slate-900 bg-white rounded-lg focus:outline-none font-medium">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-teal-200 mb-1">Имя</label>
+                        <input type="text" id="regFirstName" required placeholder="Иван" class="w-full px-3 py-2 text-xs text-slate-900 bg-white rounded-lg focus:outline-none font-medium">
+                    </div>
+
+                    <!-- Student Only Fields -->
+                    <div id="regStudentFields" class="grid grid-cols-2 gap-2.5">
+                        <div>
+                            <label class="block text-xs font-semibold text-teal-200 mb-1">Класс</label>
+                            <select id="regGrade" class="w-full px-2.5 py-2 text-xs text-slate-900 bg-white rounded-lg focus:outline-none font-medium">
+                                <option value="1">1 класс</option>
+                                <option value="2">2 класс</option>
+                                <option value="3">3 класс</option>
+                                <option value="4">4 класс</option>
+                                <option value="5">5 класс</option>
+                                <option value="6">6 класс</option>
+                                <option value="7">7 класс</option>
+                                <option value="8">8 класс</option>
+                                <option value="9">9 класс</option>
+                                <option value="10">10 класс</option>
+                                <option value="11" selected>11 класс</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-teal-200 mb-1">Литера</label>
+                            <select id="regLetter" class="w-full px-2.5 py-2 text-xs text-slate-900 bg-white rounded-lg focus:outline-none font-medium">
+                                <option value="А">А</option>
+                                <option value="Б" selected>Б</option>
+                                <option value="В">В</option>
+                                <option value="Г">Г</option>
+                                <option value="Д">Д</option>
+                                <option value="Е">Е</option>
+                                <option value="Ж">Ж</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="regError" class="hidden text-xs text-rose-300 bg-rose-950/80 p-2.5 rounded-lg border border-rose-700/60"></div>
+                    <div id="regSuccess" class="hidden text-xs text-emerald-300 bg-emerald-950/80 p-2.5 rounded-lg border border-emerald-700/60"></div>
+
+                    <button type="submit" class="w-full py-2.5 px-4 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-white font-bold text-xs rounded-lg shadow-lg transition mt-2">
+                        Тіркелу (Зарегистрироваться)
+                    </button>
+                </form>
+
+            </div>
+
+            <!-- Footer Copy inside sidebar -->
+            <div class="p-4 border-t border-emerald-900/60 text-[11px] text-teal-300/60 text-center">
+                © 2026 Портал учителей • Қазақ тілі
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 bg-slate-100 p-4 sm:p-6 overflow-y-auto">
+            
+            <!-- TAB 1: HOME PAGE (новости и объявления) -->
+            <section id="tabContent-home" class="space-y-6">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                        <div class="flex items-center space-x-2 text-slate-700 font-semibold text-sm sm:text-base">
+                            <i class="fa-solid fa-bullhorn text-rose-500"></i>
+                            <span>Жаңалықтар мен хабарландырулар (Новости)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 sm:p-6">
+                        <div class="text-xs text-slate-400 mb-2">📅 11.06.2026</div>
+                        
+                        <div class="relative bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl p-6 border border-teal-100">
+                            <h2 class="text-xl sm:text-2xl font-bold text-slate-900 mb-2">
+                                Қазақ тілі мен әдебиетінен СОР және СОЧ тапсырмалары
+                            </h2>
+                            <p class="text-sm text-slate-600 max-w-2xl leading-relaxed mb-4">
+                                Оқушылар үшін Тыңдалым (Listening) және Оқылым (Reading) дағдылары бойынша онлайн тестілеу платформасы іске қосылды. Барлық тапсырмалар автоматты түрде жинақталып, мұғалім тексергеннен кейін нәтиже «Нәтижелер» бөлімінде көрсетіледі.
+                            </p>
+                            <div class="flex flex-wrap gap-3">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
+                                    <i class="fa-solid fa-headphones mr-1.5"></i> Тыңдалым
+                                </span>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                                    <i class="fa-solid fa-book-open mr-1.5"></i> Оқылым
+                                </span>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                    <i class="fa-solid fa-clock mr-1.5"></i> Талаптар: 20-45 мин
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: STUDENT SOR / SOCH TESTS LIST & SOLVING -->
+            <section id="tabContent-sor" class="hidden space-y-6">
+                
+                <!-- SOR LIST VIEW -->
+                <div id="sorListView" class="space-y-4">
+                    <div class="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <h2 class="font-bold text-slate-800 text-base sm:text-lg flex items-center">
+                            <i class="fa-solid fa-file-pen text-blue-600 mr-2"></i>
+                            Қолжетімді СОР / СОЧ тапсырмалары
+                        </h2>
+                        <span class="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200 font-medium" id="sorCountBadge">0 тапсырма</span>
+                    </div>
+
+                    <!-- Cards Container -->
+                    <div id="sorCardsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- ACTIVE TEST TAKING VIEW -->
+                <div id="sorTakingView" class="hidden space-y-6">
+                    <button onclick="backToSorList()" class="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-lg shadow-sm transition flex items-center space-x-2">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Тізімге оралу</span>
+                    </button>
+
+                    <!-- Test Header -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                            <div>
+                                <span id="takingTestTypeBadge" class="inline-block px-2.5 py-0.5 text-xs font-semibold bg-blue-100 text-blue-800 rounded-full mb-1">СӨР</span>
+                                <h2 id="takingTestTitle" class="text-xl font-bold text-slate-900">--</h2>
+                                <p id="takingTestMeta" class="text-xs text-slate-500 mt-1">--</p>
+                            </div>
+                            <div class="flex items-center space-x-3 bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs">
+                                <div class="text-slate-600"><i class="fa-regular fa-clock text-blue-600 mr-1"></i> Уақыты: <span id="takingTestTime" class="font-bold">25 минут</span></div>
+                                <div class="text-slate-600"><i class="fa-solid fa-star text-amber-500 mr-1"></i> Жалпы балл: <span id="takingTestMaxScore" class="font-bold">15</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Test Form Questions -->
+                    <form id="takingTestForm" onsubmit="submitStudentTest(event)" class="space-y-6">
+                        <div id="takingTestQuestionsContainer" class="space-y-6">
+                            <!-- Rendered dynamically -->
+                        </div>
+
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                            <span class="text-xs text-slate-500">Барлық сұрақтарға жауап бергеніңізге көз жеткізіңіз.</span>
+                            <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold rounded-lg shadow-lg transition flex items-center space-x-2">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span>Жұмысты тапсыру (Отправить)</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </section>
+
+            <!-- TAB 3: STUDENT RESULTS PAGE (Detailed evaluation after check) -->
+            <section id="tabContent-results" class="hidden space-y-6">
+                
+                <div id="resultsListView" class="space-y-4">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <h2 class="font-bold text-slate-800 text-lg flex items-center">
+                            <i class="fa-solid fa-square-poll-vertical text-emerald-600 mr-2"></i>
+                            Нәтижелер мен тексерілген жұмыстар
+                        </h2>
+                    </div>
+
+                    <div id="studentResultsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Detailed Single Result View -->
+                <div id="resultDetailView" class="hidden space-y-6">
+                    <button onclick="backToResultsList()" class="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-lg shadow-sm transition flex items-center space-x-2">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Нәтижелерге оралу</span>
+                    </button>
+
+                    <div id="resultDetailContent" class="space-y-6">
+                        <!-- Rendered by JS based on checked / pending state -->
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- TAB 4: TEACHER GRADING / EVALUATION DASHBOARD -->
+            <section id="tabContent-teacherGrading" class="hidden space-y-6">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+                    <div>
+                        <h2 class="font-bold text-slate-800 text-lg flex items-center">
+                            <i class="fa-solid fa-list-check text-indigo-600 mr-2"></i>
+                            Тексерілуі тиіс жұмыстар (Проверка СОР/СОЧ)
+                        </h2>
+                        <p class="text-xs text-slate-500">Оқушылардан түскен барлық тапсырмалардың тізімі</p>
+                    </div>
+                </div>
+
+                <!-- Table of submissions -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs sm:text-sm">
+                            <thead class="bg-slate-50 text-slate-600 border-b border-slate-200 font-semibold uppercase text-[11px]">
+                                <tr>
+                                    <th class="p-3.5">Оқушы</th>
+                                    <th class="p-3.5">Жұмыс атауы</th>
+                                    <th class="p-3.5">Мерзімі</th>
+                                    <th class="p-3.5">Мәртебесі (Статус)</th>
+                                    <th class="p-3.5">Балл</th>
+                                    <th class="p-3.5 text-right">Әрекет</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teacherGradingTableBody" class="divide-y divide-slate-100 text-slate-700">
+                                <!-- Rendered dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: TEACHER TEST CREATOR / MANAGEMENT -->
+            <section id="tabContent-teacherSorManage" class="hidden space-y-6">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <h2 class="font-bold text-slate-800 text-lg flex items-center">
+                            <i class="fa-solid fa-folder-plus text-blue-600 mr-2"></i>
+                            СОР / СОЧ тапсырмаларын басқару
+                        </h2>
+                        <p class="text-xs text-slate-500">Жаңа тапсырма құрастыру немесе барларын өңдеу</p>
+                    </div>
+                    <button onclick="openSorModalForCreate()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs rounded-lg shadow-md transition flex items-center space-x-2">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Жаңа СОР/СОЧ жасау</span>
+                    </button>
+                </div>
+
+                <!-- SOR Cards list for edit -->
+                <div id="teacherSorManageGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Rendered by JS -->
+                </div>
+            </section>
+
+            <!-- TAB 6: ADMIN PENDING TEACHER REQUESTS (Латыпова_Майра Only) -->
+            <section id="tabContent-adminRequests" class="hidden space-y-6">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <h2 class="font-bold text-slate-800 text-lg flex items-center">
+                        <i class="fa-solid fa-user-shield text-amber-600 mr-2"></i>
+                        Мұғалімдерді тіркеу өтініштері (Заявки учителей)
+                    </h2>
+                    <p class="text-xs text-slate-500">Мұғалім ретінде тіркелгісі келетін пайдаланушыларға рұқсат беру</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs sm:text-sm">
+                            <thead class="bg-slate-50 text-slate-600 border-b border-slate-200 font-semibold uppercase text-[11px]">
+                                <tr>
+                                    <th class="p-3.5">Аты-жөні</th>
+                                    <th class="p-3.5">Ұсынылған логин</th>
+                                    <th class="p-3.5">Мәртебесі</th>
+                                    <th class="p-3.5 text-right">Шешім</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminRequestsTableBody" class="divide-y divide-slate-100 text-slate-700">
+                                <!-- Rendered dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- MODAL: GRADING MODAL FOR TEACHER -->
+    <div id="gradingModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+            <div class="p-4 bg-slate-900 text-white flex justify-between items-center">
+                <h3 class="font-bold text-sm sm:text-base flex items-center">
+                    <i class="fa-solid fa-file-signature text-amber-400 mr-2"></i>
+                    Жұмысты тексеру: <span id="gradingModalStudentName" class="ml-1.5 text-amber-300"></span>
+                </h3>
+                <button onclick="closeGradingModal()" class="text-slate-400 hover:text-white text-lg px-2">&times;</button>
+            </div>
+
+            <div id="gradingModalBody" class="p-5 overflow-y-auto flex-1 space-y-6">
+                <!-- Dynamically filled with student's answers & score inputs -->
+            </div>
+
+            <div class="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+                <button onclick="closeGradingModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-xs font-medium hover:bg-slate-100">Болдырмау</button>
+                <button onclick="saveStudentEvaluation()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold shadow-md">Сақтау және Бағалау</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: CREATE / EDIT SOR / SOCH (FOR TEACHERS) -->
+    <div id="sorCreateModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-200">
+            <div class="p-4 bg-slate-900 text-white flex justify-between items-center border-b border-slate-800">
+                <h3 class="font-bold text-sm sm:text-base flex items-center" id="sorModalHeaderTitle">
+                    <i class="fa-solid fa-folder-plus text-emerald-400 mr-2"></i> Жаңа СОР/СОЧ жасау
+                </h3>
+                <button onclick="closeSorModal()" class="text-slate-400 hover:text-white text-xl px-2">&times;</button>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-1 space-y-5 text-slate-800 text-xs sm:text-sm">
+                <input type="hidden" id="modalSorId">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1.5">Атауы (Название)</label>
+                        <input type="text" id="modalSorTitle" placeholder="СӨР №2: Абай жолы" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none text-xs font-medium">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1.5">Түрі (Тип)</label>
+                        <select id="modalSorType" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:outline-none text-xs font-medium">
+                            <option value="СӨР 1">СӨР 1 (СОР 1)</option>
+                            <option value="СӨР 2">СӨР 2 (СОР 2)</option>
+                            <option value="СӨЧ">СӨЧ (СОЧ)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1.5">Сынып (Класс)</label>
+                        <select id="modalSorGrade" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:outline-none text-xs font-medium">
+                            <option value="1">1 сынып</option>
+                            <option value="2">2 сынып</option>
+                            <option value="3">3 сынып</option>
+                            <option value="4">4 сынып</option>
+                            <option value="5">5 сынып</option>
+                            <option value="6">6 сынып</option>
+                            <option value="7">7 сынып</option>
+                            <option value="8">8 сынып</option>
+                            <option value="9">9 сынып</option>
+                            <option value="10">10 сынып</option>
+                            <option value="11" selected>11 сынып</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1.5">Тоқсан (Четверть)</label>
+                        <select id="modalSorQuarter" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:outline-none text-xs font-medium">
+                            <option value="1">1-тоқсан</option>
+                            <option value="2">2-тоқсан</option>
+                            <option value="3">3-тоқсан</option>
+                            <option value="4" selected>4-тоқсан</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1.5">Уақыт лимиті (мин)</label>
+                        <input type="number" id="modalSorTime" value="25" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:outline-none text-xs font-medium">
+                    </div>
+                </div>
+
+                <!-- Text Context for Reading -->
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1.5">Оқылым мәтіні (Текст для чтения)</label>
+                    <textarea id="modalSorReadingText" rows="3" placeholder="Мәтінді осы жерге енгізіңіз..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:outline-none text-xs font-normal leading-relaxed"></textarea>
+                </div>
+
+                <!-- Audio URL for Listening -->
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1.5">Тыңдалым аудио сілтемесі (Аудио URL)</label>
+                    <input type="text" id="modalSorAudioUrl" placeholder="https://example.com/audio.mp3" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg focus:outline-none text-xs font-mono">
+                </div>
+
+                <!-- Questions List & Builder -->
+                <div class="border-t border-slate-200 pt-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="font-bold text-slate-800">Сұрақтар тізімі (Вопросы)</h4>
+                        <button type="button" onclick="toggleAddQuestionForm(true)" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold shadow-sm transition flex items-center space-x-1.5">
+                            <i class="fa-solid fa-plus text-[10px]"></i>
+                            <span>Сұрақ қосу</span>
+                        </button>
+                    </div>
+
+                    <!-- Dynamic form for adding a new question -->
+                    <div id="addQuestionForm" class="hidden bg-slate-50 p-4 rounded-xl border border-slate-300 space-y-3 mb-4 shadow-sm">
+                        <h5 class="font-bold text-teal-900 text-xs uppercase tracking-wide">Жаңа сұрақ параметрі</h5>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Дағды (Бөлім)</label>
+                                <select id="qSec" class="w-full p-2 border border-slate-300 rounded-lg text-xs font-medium">
+                                    <option value="Тыңдалым">Тыңдалым</option>
+                                    <option value="Оқылым" selected>Оқылым</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Тип</label>
+                                <select id="qType" onchange="toggleOptionFields()" class="w-full p-2 border border-slate-300 rounded-lg text-xs font-medium">
+                                    <option value="choice">Тест (таңдау)</option>
+                                    <option value="open">Жазбаша (открытый ответ)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Балл</label>
+                                <input type="number" id="qScore" value="2" min="1" max="10" class="w-full p-2 border border-slate-300 rounded-lg text-xs font-medium">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Сұрақ мәтіні</label>
+                            <input type="text" id="qText" placeholder="Сұрақты жазыңыз..." class="w-full p-2 border border-slate-300 rounded-lg text-xs font-medium">
+                        </div>
+
+                        <!-- Choices input if type === choice -->
+                        <div id="qChoiceContainer" class="space-y-1.5">
+                            <label class="block text-[11px] font-semibold text-slate-600">Варианттар (3 шт)</label>
+                            <input type="text" id="qOpt1" placeholder="Вариант А" class="w-full p-2 border border-slate-300 rounded-lg text-xs font-medium">
+                            <input type="text" id="qOpt2" placeholder="Вариант Б" class="w-full p-2 border border-slate-300 rounded-lg text-xs font-medium">
+                            <input type="text" id="qOpt3" placeholder="Вариант В" class="w-full p-2 border border-slate-300 rounded-lg text-xs font-medium">
+                        </div>
+
+                        <div class="flex justify-end space-x-2 pt-2">
+                            <button type="button" onclick="toggleAddQuestionForm(false)" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-medium">Болдырмау</button>
+                            <button type="button" onclick="confirmAddQuestion()" class="px-3 py-1.5 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold">Сақтау</button>
+                        </div>
+                    </div>
+
+                    <div id="modalQuestionsList" class="space-y-2">
+                        <!-- Questions preview list -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-slate-200 bg-slate-50 flex justify-end space-x-3">
+                <button onclick="closeSorModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-100">Болдырмау</button>
+                <button onclick="saveSorTest()" class="px-5 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold shadow-md">Жұмысты жариялау</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- JAVASCRIPT STATE MANAGEMENT & INTERACTION -->
+    <script>
+
+        /*
+        1. Твои ключи из Supabase
+        const SUPABASE_URL = 'https://geapgmmkzdqmjmftdkqb.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'sb_publishable_UGtzaza2TFDSQ18t2NGqGQ_WcNSbtoZ'; // твой длинный Publishable key
+
+        // 2. Создание подключения (ПИСАТЬ СТРОГО 1 РАЗ)
+        let supabaseClient = null;
+        if (typeof window.supabase !== 'undefined' && SUPABASE_ANON_KEY) {
+            try {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } catch (err) {
+                console.warn("Ошибка подключения Supabase:", err);
+            }
+        }
+        */
+
+        // GLOBAL STATE
+        const state = {
+            isLoggedIn: false,
+            user: null, // Holds current user object when logged in
+
+            // Predefined accounts & dynamic user storage
+            // ONLY Латыпова_Майра is pre-configured
+            registeredUsers: {
+                'Латыпова_Майра': {
+                    login: 'Латыпова_Майра',
+                    pass: 'admin',
+                    name: 'Латыпова Майра',
+                    initials: 'ЛМ',
+                    class: 'Мұғалім • Главный админ',
+                    role: 'teacher'
+                }
+            },
+
+            // Pending Teacher Requests sent to Head Administrator (Латыпова_Майра)
+            pendingTeacherRequests: [],
+
+            activeTab: 'home',
+            activeSorId: null,
+            selectedResultSorId: null,
+            
+            // List of Created SOR/SOCH Tests (Initially empty)
+            sorTests: [],
+
+            // Student submissions storage
+            // Format: { id, sorId, studentLogin, studentName, studentClass, answers: {}, score: null, evaluated: false, feedback: '', status: 'pending' }
+            submissions: [],
+
+            // Temporary list of questions being added/edited in SorModal
+            tempQuestions: [],
+            editingGradingSubmissionId: null
+        };
+
+        // --- AUTH & TAB SWITCHING ---
+
+        function switchAuthTab(type) {
+            const btnLogin = document.getElementById('tabAuthLogin');
+            const btnReg = document.getElementById('tabAuthReg');
+            const formLogin = document.getElementById('formLogin');
+            const formRegister = document.getElementById('formRegister');
+
+            if (type === 'login') {
+                btnLogin.className = "flex-1 py-1.5 text-xs font-medium rounded-md bg-teal-600 text-white shadow";
+                btnReg.className = "flex-1 py-1.5 text-xs font-medium rounded-md text-teal-200 hover:text-white";
+                formLogin.classList.remove('hidden');
+                formRegister.classList.add('hidden');
+            } else {
+                btnReg.className = "flex-1 py-1.5 text-xs font-medium rounded-md bg-teal-600 text-white shadow";
+                btnLogin.className = "flex-1 py-1.5 text-xs font-medium rounded-md text-teal-200 hover:text-white";
+                formRegister.classList.remove('hidden');
+                formLogin.classList.add('hidden');
+            }
+        }
+
+        function toggleRegFields() {
+            const role = document.getElementById('regRole').value;
+            const studentFields = document.getElementById('regStudentFields');
+            if (role === 'student') {
+                studentFields.classList.remove('hidden');
+            } else {
+                studentFields.classList.add('hidden');
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const role = document.getElementById('regRole').value;
+            const lastName = document.getElementById('regLastName').value.trim();
+            const firstName = document.getElementById('regFirstName').value.trim();
+            const errDiv = document.getElementById('regError');
+            const succDiv = document.getElementById('regSuccess');
+
+            errDiv.classList.add('hidden');
+            succDiv.classList.add('hidden');
+
+            if (!lastName || !firstName) {
+                errDiv.textContent = 'Аты-жөніңізді толық енгізіңіз!';
+                errDiv.classList.remove('hidden');
+                return;
+            }
+
+            const login = `${lastName}_${firstName}`;
+
+            if (state.registeredUsers[login]) {
+                errDiv.textContent = 'Бұл логинмен пайдаланушы тіркеліп қойған!';
+                errDiv.classList.remove('hidden');
+                return;
+            }
+
+            if (role === 'student') {
+                const grade = document.getElementById('regGrade').value;
+                const letter = document.getElementById('regLetter').value;
+                const initials = (lastName[0] || '') + (firstName[0] || '');
+
+                state.registeredUsers[login] = {
+                    login: login,
+                    pass: '1234',
+                    name: `${lastName} ${firstName}`,
+                    initials: initials.toUpperCase(),
+                    class: `${grade}${letter} класс`,
+                    role: 'student'
+                };
+
+                succDiv.textContent = `Тіркелу сәтті! Логиніңіз: ${login}, Пароль: 1234`;
+                succDiv.classList.remove('hidden');
+
+                setTimeout(() => {
+                    switchAuthTab('login');
+                    document.getElementById('loginUsername').value = login;
+                    document.getElementById('loginPassword').value = '1234';
+                }, 1500);
+
+            } else { // Teacher registration
+                state.pendingTeacherRequests.push({
+                    login: login,
+                    name: `${lastName} ${firstName}`,
+                    lastName: lastName,
+                    firstName: firstName,
+                    status: 'pending'
+                });
+
+                succDiv.textContent = 'Өтініш бас администраторға (Латыпова Майра) жіберілді. Расталғаннан кейін кіре аласыз!';
+                succDiv.classList.remove('hidden');
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const userInp = document.getElementById('loginUsername').value.trim();
+            const passInp = document.getElementById('loginPassword').value.trim();
+            const errDiv = document.getElementById('loginError');
+
+            errDiv.classList.add('hidden');
+
+            const foundUser = state.registeredUsers[userInp];
+
+            if (!foundUser) {
+                errDiv.textContent = 'Осындай логині бар қолданушы табылған жоқ!';
+                errDiv.classList.remove('hidden');
+                return;
+            }
+
+            if (foundUser.pass !== passInp) {
+                errDiv.textContent = 'Пароль қате көрсетілді!';
+                errDiv.classList.remove('hidden');
+                return;
+            }
+
+            // Successful login
+            state.isLoggedIn = true;
+            state.user = foundUser;
+
+            renderState();
+        }
+
+        function logout() {
+            state.isLoggedIn = false;
+            state.user = null;
+            state.activeTab = 'home';
+            renderState();
+        }
+
+        function setActiveTab(tabName) {
+            state.activeTab = tabName;
+            renderState();
+        }
+
+        // --- MAIN RENDERER ---
+
+        function renderState() {
+            const userBlock = document.getElementById('sidebarUserBlock');
+            const loginBlock = document.getElementById('sidebarLoginBlock');
+            const topNav = document.getElementById('topNav');
+            const navContainer = document.getElementById('navContainer');
+
+            if (state.isLoggedIn && state.user) {
+                userBlock.classList.remove('hidden');
+                loginBlock.classList.add('hidden');
+                topNav.classList.remove('hidden');
+
+                document.getElementById('userName').textContent = state.user.name;
+                document.getElementById('userAvatar').textContent = state.user.initials;
+                document.getElementById('userClass').querySelector('span').textContent = state.user.class;
+
+                // Render Nav Tabs based on Role
+                let navHtml = '';
+                
+                // Common Home tab
+                navHtml += `<button onclick="setActiveTab('home')" class="px-3 py-2 rounded font-medium transition ${state.activeTab==='home' ? 'bg-emerald-800 text-white shadow':'text-teal-200 hover:text-white'}"><i class="fa-solid fa-house mr-1.5"></i>Басты бет</button>`;
+
+                if (state.user.role === 'student') {
+                    navHtml += `
+                        <button onclick="setActiveTab('sor')" class="px-3 py-2 rounded font-medium transition ${state.activeTab==='sor' ? 'bg-emerald-800 text-white shadow':'text-teal-200 hover:text-white'}"><i class="fa-solid fa-file-pen mr-1.5"></i>СОР / СОЧ</button>
+                        <button onclick="setActiveTab('results')" class="px-3 py-2 rounded font-medium transition ${state.activeTab==='results' ? 'bg-emerald-800 text-white shadow':'text-teal-200 hover:text-white'}"><i class="fa-solid fa-square-poll-vertical mr-1.5"></i>Нәтижелер</button>
+                    `;
+                } else if (state.user.role === 'teacher') {
+                    navHtml += `
+                        <button onclick="setActiveTab('teacherGrading')" class="px-3 py-2 rounded font-medium transition ${state.activeTab==='teacherGrading' ? 'bg-emerald-800 text-white shadow':'text-teal-200 hover:text-white'}"><i class="fa-solid fa-list-check mr-1.5"></i>Тексеру (Проверка)</button>
+                        <button onclick="setActiveTab('teacherSorManage')" class="px-3 py-2 rounded font-medium transition ${state.activeTab==='teacherSorManage' ? 'bg-emerald-800 text-white shadow':'text-teal-200 hover:text-white'}"><i class="fa-solid fa-folder-plus mr-1.5"></i>СОР / СОЧ басқару</button>
+                    `;
+
+                    // If Head Admin (Латыпова_Майра)
+                    if (state.user.login === 'Латыпова_Майра') {
+                        const count = state.pendingTeacherRequests.filter(r => r.status === 'pending').length;
+                        navHtml += `
+                            <button onclick="setActiveTab('adminRequests')" class="px-3 py-2 rounded font-medium transition relative ${state.activeTab==='adminRequests' ? 'bg-emerald-800 text-white shadow':'text-teal-200 hover:text-white'}">
+                                <i class="fa-solid fa-user-shield mr-1.5"></i>Өтініштер
+                                ${count > 0 ? `<span class="ml-1 bg-rose-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">${count}</span>` : ''}
+                            </button>
+                        `;
+                    }
+                }
+
+                navContainer.innerHTML = navHtml;
+
+            } else {
+                userBlock.classList.add('hidden');
+                loginBlock.classList.remove('hidden');
+                topNav.classList.add('hidden');
+            }
+
+            // Hide all tab contents
+            const tabs = ['home', 'sor', 'results', 'teacherGrading', 'teacherSorManage', 'adminRequests'];
+            tabs.forEach(t => {
+                const el = document.getElementById(`tabContent-${t}`);
+                if (el) el.classList.add('hidden');
+            });
+
+            // Show active content
+            const activeEl = document.getElementById(`tabContent-${state.activeTab}`);
+            if (activeEl) activeEl.classList.remove('hidden');
+
+            // Render Tab Specific views
+            if (state.activeTab === 'sor') renderStudentSorList();
+            if (state.activeTab === 'results') renderStudentResults();
+            if (state.activeTab === 'teacherGrading') renderTeacherGradingTable();
+            if (state.activeTab === 'teacherSorManage') renderTeacherSorManageGrid();
+            if (state.activeTab === 'adminRequests') renderAdminRequestsTable();
+        }
+
+        // --- STUDENT: SOR/SOCH LIST & TAKING ---
+
+        function renderStudentSorList() {
+            const grid = document.getElementById('sorCardsGrid');
+            const countBadge = document.getElementById('sorCountBadge');
+            
+            // Extract numeric grade from student class string (e.g. "11Б класс" -> "11")
+            let studentGrade = '11';
+            if (state.user && state.user.class) {
+                const match = state.user.class.match(/\d+/);
+                if (match) studentGrade = match[0];
+            }
+
+            // CRITICAL FIX: Only tests that student HAS NOT submitted yet should appear here!
+            const availableTests = state.sorTests.filter(t => {
+                if (t.grade !== studentGrade) return false;
+                const hasSubmission = state.submissions.some(s => s.sorId === t.id && s.studentLogin === state.user.login);
+                return !hasSubmission; // Hide if already submitted!
+            });
+
+            countBadge.textContent = `${availableTests.length} тапсырма`;
+
+            if (availableTests.length === 0) {
+                grid.innerHTML = `<div class="col-span-2 p-8 text-center text-slate-400 bg-white rounded-xl border border-slate-200 shadow-sm">Сізде тапсырылмаған белсенді СОР/СОЧ тапсырмалары жоқ. Барлық орындалған жұмыстар «Нәтижелер» бөлімінде орналасқан.</div>`;
+                return;
+            }
+
+            let html = '';
+            availableTests.forEach(test => {
+                html += `
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="px-2.5 py-1 text-xs font-bold bg-teal-100 text-teal-800 rounded-lg">${test.type} • ${test.grade}-сынып</span>
+                                <span class="px-2.5 py-1 text-xs rounded-full bg-blue-100 text-blue-800 font-semibold">Орындауға дайын</span>
+                            </div>
+                            <h3 class="font-bold text-slate-900 text-base mb-1">${test.title}</h3>
+                            <p class="text-xs text-slate-500">${test.quarter}-тоқсан • Уақыты: ${test.time} мин • Балл: ${test.maxScore}</p>
+                        </div>
+                        <div>
+                            <button onclick="startTest('${test.id}')" class="w-full py-2.5 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold transition flex items-center justify-center space-x-2 shadow">
+                                <span>Бастау</span>
+                                <i class="fa-solid fa-play text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            grid.innerHTML = html;
+        }
+
+        function openSorModalForCreate() {
+            state.tempQuestions = [];
+            document.getElementById('modalSorId').value = '';
+            document.getElementById('modalSorTitle').value = '';
+            document.getElementById('modalSorReadingText').value = '';
+            document.getElementById('modalSorAudioUrl').value = '';
+            document.getElementById('sorModalHeaderTitle').textContent = 'Жаңа СОР/СОЧ жасау';
+            
+            renderTempQuestionsList();
+            document.getElementById('sorCreateModal').classList.remove('hidden');
+        }
+
+        function openSorModalForEdit(sorId) {
+            const test = state.sorTests.find(t => t.id === sorId);
+            if (!test) return;
+
+            document.getElementById('modalSorId').value = test.id;
+            document.getElementById('modalSorTitle').value = test.title;
+            document.getElementById('modalSorType').value = test.type;
+            document.getElementById('modalSorGrade').value = test.grade;
+            document.getElementById('modalSorQuarter').value = test.quarter;
+            document.getElementById('modalSorTime').value = test.time;
+            document.getElementById('modalSorReadingText').value = test.readingText || '';
+            document.getElementById('modalSorAudioUrl').value = test.audioUrl || '';
+            document.getElementById('sorModalHeaderTitle').textContent = 'СОР/СОЧ тапсырмасын өңдеу';
+
+            state.tempQuestions = JSON.parse(JSON.stringify(test.questions));
+            renderTempQuestionsList();
+            document.getElementById('sorCreateModal').classList.remove('hidden');
+        }
+
+        function closeSorModal() {
+            document.getElementById('sorCreateModal').classList.add('hidden');
+        }
+
+        function toggleAddQuestionForm(show) {
+            const f = document.getElementById('addQuestionForm');
+            if (show) f.classList.remove('hidden');
+            else f.classList.add('hidden');
+        }
+
+        function toggleOptionFields() {
+            const type = document.getElementById('qType').value;
+            const container = document.getElementById('qChoiceContainer');
+            if (type === 'choice') container.classList.remove('hidden');
+            else container.classList.add('hidden');
+        }
+
+        function confirmAddQuestion() {
+            const text = document.getElementById('qText').value.trim();
+            const sec = document.getElementById('qSec').value;
+            const type = document.getElementById('qType').value;
+            const score = parseInt(document.getElementById('qScore').value) || 2;
+
+            if (!text) {
+                alert('Сұрақ мәтінін жазыңыз!');
+                return;
+            }
+
+            const newQ = {
+                id: 'q_' + Date.now(),
+                section: sec,
+                text: text,
+                type: type,
+                score: score
+            };
+
+            if (type === 'choice') {
+                const opt1 = document.getElementById('qOpt1').value.trim();
+                const opt2 = document.getElementById('qOpt2').value.trim();
+                const opt3 = document.getElementById('qOpt3').value.trim();
+                newQ.options = [opt1 || 'Вариант А', opt2 || 'Вариант Б', opt3 || 'Вариант В'];
+            }
+
+            state.tempQuestions.push(newQ);
+            document.getElementById('qText').value = '';
+            toggleAddQuestionForm(false);
+            renderTempQuestionsList();
+        }
+
+        function removeTempQuestion(idx) {
+            state.tempQuestions.splice(idx, 1);
+            renderTempQuestionsList();
+        }
+
+        function renderTempQuestionsList() {
+            const container = document.getElementById('modalQuestionsList');
+            if (state.tempQuestions.length === 0) {
+                container.innerHTML = `<div class="text-xs text-slate-400 italic">Сұрақтар әлі қосылмады.</div>`;
+                return;
+            }
+
+            let html = '';
+            state.tempQuestions.forEach((q, idx) => {
+                html += `
+                    <div class="flex items-center justify-between p-2.5 bg-slate-50 border rounded text-xs">
+                        <div>
+                            <span class="font-bold text-slate-700">${idx + 1}. [${q.section} • ${q.score} балл]</span> ${q.text}
+                        </div>
+                        <button onclick="removeTempQuestion(${idx})" class="text-red-500 hover:text-red-700 px-2">&times;</button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function saveSorTest() {
+            const id = document.getElementById('modalSorId').value;
+            const title = document.getElementById('modalSorTitle').value.trim();
+            const type = document.getElementById('modalSorType').value;
+            const grade = document.getElementById('modalSorGrade').value;
+            const quarter = document.getElementById('modalSorQuarter').value;
+            const time = document.getElementById('modalSorTime').value;
+            const readingText = document.getElementById('modalSorReadingText').value;
+            const audioUrl = document.getElementById('modalSorAudioUrl').value;
+
+            if (!title) {
+                alert('Тапсырма атауын жазыңыз!');
+                return;
+            }
+
+            const totalScore = state.tempQuestions.reduce((sum, q) => sum + (q.score || 0), 0);
+
+            if (id) {
+                // Update existing
+                const test = state.sorTests.find(t => t.id === id);
+                if (test) {
+                    test.title = title;
+                    test.type = type;
+                    test.grade = grade;
+                    test.quarter = quarter;
+                    test.time = time;
+                    test.readingText = readingText;
+                    test.audioUrl = audioUrl;
+                    test.maxScore = totalScore || 15;
+                    test.questions = [...state.tempQuestions];
+                }
+            } else {
+                // Create new
+                const newTest = {
+                    id: 'sor_' + Date.now(),
+                    title: title,
+                    type: type,
+                    grade: grade,
+                    quarter: quarter,
+                    time: time,
+                    maxScore: totalScore || 15,
+                    readingText: readingText,
+                    audioUrl: audioUrl,
+                    questions: [...state.tempQuestions]
+                };
+                state.sorTests.push(newTest);
+            }
+
+            closeSorModal();
+            renderTeacherSorManageGrid();
+        }
+
+        // --- MISSING STUDENT & TEACHER RENDERERS ---
+
+        function startTest(testId) {
+            state.activeSorId = testId;
+            const test = state.sorTests.find(t => t.id === testId);
+            if (!test) return;
+
+            document.getElementById('sorListView').classList.add('hidden');
+            document.getElementById('sorTakingView').classList.remove('hidden');
+
+            document.getElementById('takingTestTypeBadge').textContent = test.type;
+            document.getElementById('takingTestTitle').textContent = test.title;
+            document.getElementById('takingTestMeta').textContent = `${test.grade}-сынып • ${test.quarter}-тоқсан`;
+            document.getElementById('takingTestTime').textContent = `${test.time} минут`;
+            document.getElementById('takingTestMaxScore').textContent = test.maxScore;
+
+            const qContainer = document.getElementById('takingTestQuestionsContainer');
+            let html = '';
+
+            if (test.audioUrl) {
+                html += `
+                    <div class="bg-amber-50 p-4 rounded-xl border border-amber-200">
+                        <h4 class="font-bold text-amber-900 text-xs mb-2 flex items-center">
+                            <i class="fa-solid fa-headphones mr-2 text-amber-600"></i> Тыңдалым аудисы
+                        </h4>
+                        <audio controls class="w-full">
+                            <source src="${test.audioUrl}" type="audio/mpeg">
+                            Браузеріңіз аудионы қолдамайды.
+                        </audio>
+                    </div>
+                `;
+            }
+
+            if (test.readingText) {
+                html += `
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1">
+                        <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wide flex items-center">
+                            <i class="fa-solid fa-book-open mr-2 text-teal-600"></i> Оқылым мәтіні
+                        </h4>
+                        <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-line">${test.readingText}</p>
+                    </div>
+                `;
+            }
+
+            test.questions.forEach((q, idx) => {
+                html += `
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                        <div class="flex justify-between items-start">
+                            <span class="font-bold text-slate-800 text-sm">${idx + 1}. ${q.text}</span>
+                            <span class="text-xs text-amber-700 font-semibold bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">${q.score} балл</span>
+                        </div>
+                `;
+
+                if (q.type === 'choice' && q.options) {
+                    html += `<div class="space-y-2 pt-1">`;
+                    q.options.forEach((opt, optIdx) => {
+                        html += `
+                            <label class="flex items-center space-x-2.5 text-xs text-slate-700 p-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                                <input type="radio" name="ans_${q.id}" value="${opt}" class="text-teal-600 focus:ring-teal-500">
+                                <span>${opt}</span>
+                            </label>
+                        `;
+                    });
+                    html += `</div>`;
+                } else {
+                    html += `
+                        <textarea name="ans_${q.id}" rows="3" placeholder="Жауабыңызды осы жерге жазыңыз..." class="w-full p-3 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none"></textarea>
+                    `;
+                }
+
+                html += `</div>`;
+            });
+
+            qContainer.innerHTML = html;
+        }
+
+        function backToSorList() {
+            document.getElementById('sorTakingView').classList.add('hidden');
+            document.getElementById('sorListView').classList.remove('hidden');
+            state.activeSorId = null;
+        }
+
+        function submitStudentTest(e) {
+            e.preventDefault();
+            const test = state.sorTests.find(t => t.id === state.activeSorId);
+            if (!test) return;
+
+            const form = document.getElementById('takingTestForm');
+            const formData = new FormData(form);
+            const answers = {};
+
+            test.questions.forEach(q => {
+                answers[q.id] = formData.get(`ans_${q.id}`) || 'Жауап берілмеді';
+            });
+
+            const submission = {
+                id: 'sub_' + Date.now(),
+                sorId: test.id,
+                studentLogin: state.user.login,
+                studentName: state.user.name,
+                studentClass: state.user.class,
+                submittedAt: new Date().toLocaleDateString('ru-RU'),
+                answers: answers,
+                score: null,
+                evaluated: false,
+                feedback: '',
+                status: 'pending'
+            };
+
+            state.submissions.push(submission);
+
+            alert('Тапсырма сәтті тапсырылды! Мұғалім тексерген соң нәтиже "Нәтижелер" бөлімінде пайда болады.');
+
+            backToSorList();
+            setActiveTab('results');
+        }
+
+        function renderStudentResults() {
+            const grid = document.getElementById('studentResultsGrid');
+            const mySubmissions = state.submissions.filter(s => s.studentLogin === state.user.login);
+
+            document.getElementById('resultsListView').classList.remove('hidden');
+            document.getElementById('resultDetailView').classList.add('hidden');
+
+            if (mySubmissions.length === 0) {
+                grid.innerHTML = `<div class="col-span-2 p-8 text-center text-slate-400 bg-white rounded-xl border border-slate-200 shadow-sm">Сізде әлі тапсырылған немесе тексерілген жұмыстар жоқ.</div>`;
+                return;
+            }
+
+            let html = '';
+            mySubmissions.forEach(sub => {
+                const test = state.sorTests.find(t => t.id === sub.sorId) || { title: 'Тапсырма', maxScore: 15, type: 'СӨР' };
+                const isDone = sub.evaluated;
+
+                html += `
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="px-2.5 py-1 text-xs font-bold bg-teal-100 text-teal-800 rounded-lg">${test.type}</span>
+                                <span class="px-2.5 py-1 text-xs rounded-full font-semibold ${isDone ? 'bg-emerald-100 text-emerald-800':'bg-amber-100 text-amber-800'}">
+                                    ${isDone ? 'Тексерілді ✅' : 'Тексерілуде ⏳'}
+                                </span>
+                            </div>
+                            <h3 class="font-bold text-slate-900 text-base mb-1">${test.title}</h3>
+                            <p class="text-xs text-slate-500">Тапсырылды: ${sub.submittedAt}</p>
+                        </div>
+                        <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+                            <div class="text-xs">
+                                <span class="text-slate-500">Балл: </span>
+                                <span class="font-bold text-slate-900 text-sm">${isDone ? `${sub.score} / ${test.maxScore}` : '--'}</span>
+                            </div>
+                            <button onclick="showResultDetail('${sub.id}')" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold transition">
+                                Қарау
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            grid.innerHTML = html;
+        }
+
+        function showResultDetail(subId) {
+            const sub = state.submissions.find(s => s.id === subId);
+            if (!sub) return;
+
+            const test = state.sorTests.find(t => t.id === sub.sorId) || { title: 'Тапсырма', maxScore: 15, questions: [] };
+
+            document.getElementById('resultsListView').classList.add('hidden');
+            document.getElementById('resultDetailView').classList.remove('hidden');
+
+            const container = document.getElementById('resultDetailContent');
+
+            let html = `
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-lg font-bold text-slate-900">${test.title}</h2>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold ${sub.evaluated ? 'bg-emerald-100 text-emerald-800':'bg-amber-100 text-amber-800'}">
+                            ${sub.evaluated ? `Балл: ${sub.score} / ${test.maxScore}` : 'Тексерілуде ⏳'}
+                        </span>
+                    </div>
+                    ${sub.feedback ? `<div class="p-3 bg-teal-50 border border-teal-200 rounded-lg text-xs text-teal-900"><strong>Мұғалім пікірі:</strong> ${sub.feedback}</div>` : ''}
+                </div>
+                <div class="space-y-4">
+            `;
+
+            test.questions.forEach((q, idx) => {
+                const ans = sub.answers[q.id] || 'Жауап берілмеді';
+                html += `
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-2">
+                        <div class="font-semibold text-slate-800 text-xs">${idx + 1}. ${q.text}</div>
+                        <div class="text-xs bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-slate-700">
+                            <strong>Сіздің жауабыңыз:</strong> ${ans}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        function backToResultsList() {
+            document.getElementById('resultDetailView').classList.add('hidden');
+            document.getElementById('resultsListView').classList.remove('hidden');
+        }
+
+        function renderTeacherGradingTable() {
+            const tbody = document.getElementById('teacherGradingTableBody');
+
+            if (state.submissions.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">Тексерілетін жұмыстар жоқ.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            state.submissions.forEach(sub => {
+                const test = state.sorTests.find(t => t.id === sub.sorId) || { title: 'Тапсырма', maxScore: 15 };
+                html += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-3.5 font-bold text-slate-900">${sub.studentName} <span class="text-xs text-slate-400">(${sub.studentClass})</span></td>
+                        <td class="p-3.5 text-slate-700 font-medium">${test.title}</td>
+                        <td class="p-3.5 text-slate-500">${sub.submittedAt}</td>
+                        <td class="p-3.5">
+                            <span class="px-2 py-0.5 text-xs rounded-full font-semibold ${sub.evaluated ? 'bg-emerald-100 text-emerald-800':'bg-amber-100 text-amber-800'}">
+                                ${sub.evaluated ? 'Тексерілді' : 'Күтілуде'}
+                            </span>
+                        </td>
+                        <td class="p-3.5 font-bold text-slate-800">${sub.evaluated ? `${sub.score} / ${test.maxScore}` : '--'}</td>
+                        <td class="p-3.5 text-right">
+                            <button onclick="openGradingModal('${sub.id}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold">
+                                ${sub.evaluated ? 'Қайта тексеру' : 'Тексеру'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        function openGradingModal(subId) {
+            state.editingGradingSubmissionId = subId;
+            const sub = state.submissions.find(s => s.id === subId);
+            if (!sub) return;
+
+            const test = state.sorTests.find(t => t.id === sub.sorId) || { title: 'Тапсырма', questions: [] };
+
+            document.getElementById('gradingModalStudentName').textContent = `${sub.studentName} (${sub.studentClass})`;
+            const body = document.getElementById('gradingModalBody');
+
+            let html = `
+                <div class="space-y-4 text-xs">
+                    <h4 class="font-bold text-slate-800 text-sm">${test.title}</h4>
+            `;
+
+            test.questions.forEach((q, idx) => {
+                const ans = sub.answers[q.id] || 'Жауап берілмеді';
+                html += `
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2">
+                        <div class="font-bold text-slate-800">${idx + 1}. ${q.text} (${q.score} балл)</div>
+                        <div class="p-2.5 bg-white border rounded text-slate-700"><strong>Жауабы:</strong> ${ans}</div>
+                    </div>
+                `;
+            });
+
+            html += `
+                    <div class="pt-3 border-t border-slate-200 space-y-3">
+                        <div>
+                            <label class="block font-bold text-slate-800 mb-1">Жалпы қойылатын балл</label>
+                            <input type="number" id="gradingModalScore" value="${sub.score !== null ? sub.score : 0}" class="w-full p-2.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-800 mb-1">Мұғалімнің түсініктемесі (Комментарий)</label>
+                            <textarea id="gradingModalFeedback" rows="2" class="w-full p-2.5 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none">${sub.feedback || ''}</textarea>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            body.innerHTML = html;
+            document.getElementById('gradingModal').classList.remove('hidden');
+        }
+
+        function closeGradingModal() {
+            document.getElementById('gradingModal').classList.add('hidden');
+            state.editingGradingSubmissionId = null;
+        }
+
+        function saveStudentEvaluation() {
+            const sub = state.submissions.find(s => s.id === state.editingGradingSubmissionId);
+            if (!sub) return;
+
+            const scoreInp = parseInt(document.getElementById('gradingModalScore').value) || 0;
+            const feedbackInp = document.getElementById('gradingModalFeedback').value.trim();
+
+            sub.score = scoreInp;
+            sub.feedback = feedbackInp;
+            sub.evaluated = true;
+            sub.status = 'completed';
+
+            closeGradingModal();
+            renderTeacherGradingTable();
+        }
+
+        function renderTeacherSorManageGrid() {
+            const grid = document.getElementById('teacherSorManageGrid');
+
+            if (state.sorTests.length === 0) {
+                grid.innerHTML = `<div class="col-span-2 p-8 text-center text-slate-400 bg-white rounded-xl border border-slate-200 shadow-sm">Жасалған СОР/СОЧ тапсырмалары жоқ. «Жаңа СОР/СОЧ жасау» батырмасын басып, жаңасын қосыңыз.</div>`;
+                return;
+            }
+
+            let html = '';
+            state.sorTests.forEach(test => {
+                html += `
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="px-2.5 py-1 text-xs font-bold bg-teal-100 text-teal-800 rounded-lg">${test.type} • ${test.grade}-сынып</span>
+                                <span class="px-2.5 py-1 text-xs font-medium text-slate-500 bg-slate-100 rounded-full">${test.quarter}-тоқсан</span>
+                            </div>
+                            <h3 class="font-bold text-slate-900 text-base mb-1">${test.title}</h3>
+                            <p class="text-xs text-slate-500">Уақыт: ${test.time} мин • Жалпы балл: ${test.maxScore} • Сұрақ саны: ${test.questions ? test.questions.length : 0}</p>
+                        </div>
+                        <div class="flex space-x-2 pt-2 border-t border-slate-100">
+                            <button onclick="openSorModalForEdit('${test.id}')" class="flex-1 py-2 bg-amber-500 hover:bg-amber-400 text-white rounded-lg text-xs font-bold transition flex items-center justify-center space-x-1.5 shadow">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                                <span>Өңдеу</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            grid.innerHTML = html;
+        }
+
+        // --- ADMIN: PENDING TEACHER REQUESTS (Латыпова_Майра) ---
+
+        function renderAdminRequestsTable() {
+            const tbody = document.getElementById('adminRequestsTableBody');
+            const pending = state.pendingTeacherRequests;
+
+            if (pending.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400">Өтініштер жоқ.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            pending.forEach((req, idx) => {
+                const isPending = req.status === 'pending';
+                html += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-3.5 font-bold text-slate-900">${req.name}</td>
+                        <td class="p-3.5 text-slate-600 font-mono text-xs">${req.login}</td>
+                        <td class="p-3.5">
+                            <span class="px-2.5 py-1 text-xs rounded-full font-semibold ${
+                                req.status === 'approved' ? 'bg-emerald-100 text-emerald-800' :
+                                req.status === 'rejected' ? 'bg-rose-100 text-rose-800' :
+                                'bg-amber-100 text-amber-800'
+                            }">
+                                ${req.status === 'approved' ? 'Қабылданды' : req.status === 'rejected' ? 'Қабылданбады' : 'Күтілуде'}
+                            </span>
+                        </td>
+                        <td class="p-3.5 text-right space-x-1.5">
+                            ${isPending ? `
+                                <button onclick="approveTeacher(${idx})" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold">
+                                    Қабылдау
+                                </button>
+                                <button onclick="rejectTeacher(${idx})" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-bold">
+                                    Қабылдамау
+                                </button>
+                            ` : '<span class="text-xs text-slate-400">Шешім қабылданды</span>'}
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        function approveTeacher(idx) {
+            const req = state.pendingTeacherRequests[idx];
+            if (!req) return;
+
+            req.status = 'approved';
+
+            // Create teacher account with password "admin"
+            const initials = (req.lastName[0] || '') + (req.firstName[0] || '');
+            state.registeredUsers[req.login] = {
+                login: req.login,
+                pass: 'admin',
+                name: req.name,
+                initials: initials.toUpperCase(),
+                class: 'Мұғалім',
+                role: 'teacher'
+            };
+
+            alert(`Мұғалім ${req.name} сәтті қабылданды!\nЖүйеге кіру паролі: admin`);
+            renderState();
+        }
+
+        function rejectTeacher(idx) {
+            const req = state.pendingTeacherRequests[idx];
+            if (!req) return;
+            req.status = 'rejected';
+            renderState();
+        }
+
+        // --- INITIALIZATION ON WINDOW LOAD ---
+        window.onload = function() {
+            renderState();
+        };
+    </script>
+</body>
+</html>
