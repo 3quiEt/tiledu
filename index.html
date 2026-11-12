@@ -1198,11 +1198,12 @@
             renderState();
         }
 
-        let isSaving = false; // Защита от дублей
-
         async function saveSorTest() {
-            if (isSaving) return; // Если уже сохраняется, выходим
-            isSaving = true;
+            const btn = event.target;
+            if (btn.disabled) return; // Защита от повторного клика
+            btn.disabled = true;
+            const originalText = btn.textContent;
+            btn.textContent = 'Сақталуда...';
 
             const id = document.getElementById('modalSorId').value;
             const title = document.getElementById('modalSorTitle').value.trim();
@@ -1215,7 +1216,8 @@
 
             if (!title) {
                 alert('Тапсырма атауын жазыңыз!');
-                isSaving = false; // Сбрасываем блокировку, если ошибка
+                btn.disabled = false;
+                btn.textContent = originalText;
                 return;
             }
 
@@ -1233,11 +1235,8 @@
                 questions: state.tempQuestions
             };
 
-            console.log("ЧТО ОТПРАВЛЯЕМ В БАЗУ:", testData);
-
             if (supabaseClient) {
                 if (id) {
-                    // Обновляем существующий тест
                     const { error } = await supabaseClient
                         .from('tests')
                         .update(testData)
@@ -1246,25 +1245,27 @@
                     if (error) {
                         console.error('Ошибка обновления теста:', error);
                         alert('Ошибка при обновлении в базе данных!');
+                        btn.disabled = false;
+                        btn.textContent = originalText;
                         return;
                     }
                 } else {
-                    // Создаем новый тест
                     const { error } = await supabaseClient
                         .from('tests')
                         .insert([testData]);
                     
                     if (error) {
                         console.error('Ошибка сохранения теста:', error);
-                        alert('Ошибка при сохранении в базу данных!');
+                        alert('Ошибка при сохранении в базе данных!');
+                        btn.disabled = false;
+                        btn.textContent = originalText;
                         return;
                     }
                 }
             }
-            
-            isSaving = false; // Снимаем блокировку после завершения
+
             closeSorModal();
-            loadTestsFromSupabase(); // Перезагружаем актуальный список из базы
+            loadTestsFromSupabase();
         }
 
         // --- MISSING STUDENT & TEACHER RENDERERS ---
