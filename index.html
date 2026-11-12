@@ -1198,7 +1198,12 @@
             renderState();
         }
 
+        let isSaving = false; // Защита от дублей
+
         async function saveSorTest() {
+            if (isSaving) return; // Если уже сохраняется, выходим
+            isSaving = true;
+
             const id = document.getElementById('modalSorId').value;
             const title = document.getElementById('modalSorTitle').value.trim();
             const type = document.getElementById('modalSorType').value;
@@ -1210,6 +1215,7 @@
 
             if (!title) {
                 alert('Тапсырма атауын жазыңыз!');
+                isSaving = false; // Сбрасываем блокировку, если ошибка
                 return;
             }
 
@@ -1255,7 +1261,8 @@
                     }
                 }
             }
-
+            
+            isSaving = false; // Снимаем блокировку после завершения
             closeSorModal();
             loadTestsFromSupabase(); // Перезагружаем актуальный список из базы
         }
